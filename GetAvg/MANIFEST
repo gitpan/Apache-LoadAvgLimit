@@ -3,4 +3,3 @@ GetAvg.pm
 GetAvg.xs
 MANIFEST
 Makefile.PL
-test.pl

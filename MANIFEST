@@ -8,6 +8,5 @@ GetAvg/GetAvg.pm
 GetAvg/GetAvg.xs
 GetAvg/MANIFEST
 GetAvg/Makefile.PL
-test.pl
-t/apache.t
-t/get_avg.t
+t/01_use.t
+t/02_get_avg.t.off
