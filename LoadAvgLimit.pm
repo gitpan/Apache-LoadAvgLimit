@@ -6,7 +6,7 @@ use Apache;
 use Apache::Constants qw(:common HTTP_SERVICE_UNAVAILABLE);
 use Apache::LoadAvgLimit::GetAvg;
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 sub handler {
     my $r = shift;
@@ -30,15 +30,12 @@ sub handler {
     }else{
 
 	my @limit;
-
 	if( $r->dir_config('LoadAvgLimit_1') =~ /^[\d\.]{1,}$/ ){
 	    $limit[0] = $r->dir_config('LoadAvgLimit_1')
 	}
-
 	if( $r->dir_config('LoadAvgLimit_5') =~ /^[\d\.]{1,}$/ ){
             $limit[1] = $r->dir_config('LoadAvgLimit_5')
 	}
-
 	if( $r->dir_config('LoadAvgLimit_15') =~ /^[\d\.]{1,}$/ ){
             $limit[2] = $r->dir_config('LoadAvgLimit_15')
 	}
@@ -54,6 +51,11 @@ sub handler {
     }
 
     if( $over ){
+	# set Retry-After field
+	if( (my $retry_after = $r->dir_config('LoadAvgRetryAfter') ) =~ /^\d+$/ ){
+	    $r->err_header_out('Retry-After' => int $retry_after);
+	}
+
 	$r->log_reason("System load average reaches limit.", $r->filename);
 	return HTTP_SERVICE_UNAVAILABLE;
     }
@@ -76,35 +78,47 @@ Apache::LoadAvgLimit - limiting client request by system CPU load-averages
 
   <Location /perl>
     PerlInitHandler Apache::LoadAvgLimit
-    PerlSetVar LoadAvgLimit 2.50
+    PerlSetVar LoadAvgLimit 2.5
   </Location>
 
   or fully
 
   <Location /perl>
     PerlInitHandler Apache::LoadAvgLimit
-    PerlSetVar LoadAvgLimit_1 4.00
-    PerlSetVar LoadAvgLimit_5 3.00
-    PerlSetVar LoadAvgLimit_15 2.50
+    PerlSetVar LoadAvgLimit_1 3.00
+    PerlSetVar LoadAvgLimit_5 2.00
+    PerlSetVar LoadAvgLimit_15 1.50
+    PerlSetVar LoadAvgRetryAfter 120
   </Location>
 
 =head1 DESCRIPTION
 
-If system load-average is over the value of B<LoadAvgLimit*>, Apache::LoadAvgLimit will try to reduce the machine load by returning HTTP status 503 (Service Temporarily Unavailable) to client browser.
+If system load-average is over the value of B<LoadAvgLimit*>, 
+Apache::LoadAvgLimit will try to reduce the machine load by returning
+HTTP status 503 (Service Temporarily Unavailable) to client browser.
 
-Especially, it may be useful in <Location> directory that has heavy CGI, Apache::Registry script or contents-handler program.
+Especially, it may be useful in <Location> directory that has heavy CGI,
+Apache::Registry script or contents-handler program.
 
 =head1 PARAMETERS
 
 B<LoadAvgLimit>
 
-When at least one of three load-averages (1, 5, 15 min) is over this value, returning status 503.
+When at least one of three load-averages (1, 5, 15 min) is over this
+value, returning status code 503.
 
 B<LoadAvgLimit_1>, 
 B<LoadAvgLimit_5>, 
 B<LoadAvgLimit_15>
 
-Each minute's load-averages (1, 5, 15 min) is over this value, returning status 503.
+When Each minute's load-averages(1, 5, 15 min) is over this value,
+returning status code 503.
+
+B<LoadAvgRetryAfter>
+
+The second(s) that indicates how long the service is expected to be
+unavailable to browser. When this value exists, Retry-After field is
+automatically set.
 
 =head1 AUTHOR
 
@@ -112,7 +126,7 @@ Okamoto RYO <ryo@aquahill.net>
 
 =head1 SEE ALSO
 
-mod_perl(3), Apache(3), getloadavg(3), uptime(1)
+mod_perl(3), Apache(3), getloadavg(3), uptime(1), RFC1945, RFC2616
 
 =cut
 
