@@ -1,5 +1,9 @@
 Revision history for Perl extension Apache::LoadAvgLimit.
 
+0.03  Sat Sep  6 01:46:14 JST 2003
+	+ add GetAvg.pm.uptime for example.
+	* a minor fix.
+
 0.02  Tue Mar 25 12:27:45 JST 2003
 	+ add LoadAvgRetryAfter directive.
 

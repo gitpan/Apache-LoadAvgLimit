@@ -1,3 +1,22 @@
+=======================================================================
+
+Apache::LoadAvgLimit
+
+What this?
+    * Apache::LoadAvgLimit returns HTTP status 503 if the system
+      load-averages is over the limited value. It's useful to
+      prevent your machine from freezing by high CPU load.
+
+Requirements
+    * Apache web server + mod_perl environment
+    * getloadavg() system call (or try GetAvg.pm.uptime instead)
+
+Note
+    * I guess A::L::GetAvg.pm might be replaced to Sys::Load module.
+        (but Sys::Load requires Perl 5.6.0 or above to install...)
+
+=======================================================================
+
 NAME
     Apache::LoadAvgLimit - limiting client request by system CPU
     load-averages

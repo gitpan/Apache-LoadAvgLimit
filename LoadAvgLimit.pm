@@ -6,7 +6,7 @@ use Apache;
 use Apache::Constants qw(:common HTTP_SERVICE_UNAVAILABLE);
 use Apache::LoadAvgLimit::GetAvg;
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 sub handler {
     my $r = shift;
@@ -14,8 +14,10 @@ sub handler {
 
     # get
     my @avg = Apache::LoadAvgLimit::GetAvg::get_loadavg()
-        or $r->log_error("Cannot get load avg !")
-        and return SERVER_ERROR;
+        or do {
+	  $r->log_error("Cannot get load avg !");
+	  return SERVER_ERROR;
+	};
 
     my $over = 0;
     if( (my $limit = $r->dir_config('LoadAvgLimit')) =~ /^[\d\.]{1,}$/ ){
